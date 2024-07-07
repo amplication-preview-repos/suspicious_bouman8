@@ -1,0 +1,106 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DB_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Parent {
+  id        String     @id @default(cuid())
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  name      String?
+  email     String?
+  password  String?
+  children  Child[]
+  contracts Contract[]
+  quizzes   Quiz[]
+}
+
+model Child {
+  id              String       @id @default(cuid())
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  name            String?
+  classField      String?
+  schoolNumber    String?
+  parent          Parent?      @relation(fields: [parentId], references: [id])
+  parentId        String?
+  contracts       Contract[]
+  quizzes         Quiz[]
+  statisticsItems Statistics[]
+}
+
+model Quiz {
+  id         String     @id @default(cuid())
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  subject    String?
+  title      String?
+  parent     Parent?    @relation(fields: [parentId], references: [id])
+  parentId   String?
+  contract   Contract?  @relation(fields: [contractId], references: [id])
+  contractId String?
+  child      Child?     @relation(fields: [childId], references: [id])
+  childId    String?
+  questions  Question[]
+}
+
+model Contract {
+  id                   String   @id @default(cuid())
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  coinForCorrectAnswer Int?
+  coinForWrongAnswer   Int?
+  timer                Int?
+  parent               Parent?  @relation(fields: [parentId], references: [id])
+  parentId             String?
+  child                Child?   @relation(fields: [childId], references: [id])
+  childId              String?
+  quizzes              Quiz[]
+}
+
+model Question {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  text      String?
+  quiz      Quiz?    @relation(fields: [quizId], references: [id])
+  quizId    String?
+  answers   Answer[]
+}
+
+model Answer {
+  id         String    @id @default(cuid())
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  text       String?
+  isCorrect  Boolean?
+  question   Question? @relation(fields: [questionId], references: [id])
+  questionId String?
+}
+
+model Statistics {
+  id             String   @id @default(cuid())
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  correctAnswers Int?
+  wrongAnswers   Int?
+  totalCoins     Int?
+  child          Child?   @relation(fields: [childId], references: [id])
+  childId        String?
+}
+
+model User {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  firstName String?
+  lastName  String?
+  username  String   @unique
+  email     String?  @unique
+  password  String
+  roles     Json
+}
